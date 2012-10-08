@@ -1,0 +1,114 @@
+diff --git a/include/media/AudioSystem.h b/include/media/AudioSystem.h
+index f80a8d6..7e47281 100644
+--- a/include/media/AudioSystem.h
++++ b/include/media/AudioSystem.h
+@@ -146,6 +146,7 @@ public:
+     //
+     static status_t setDeviceConnectionState(audio_devices_t device, audio_policy_dev_state_t state, const char *device_address);
+     static audio_policy_dev_state_t getDeviceConnectionState(audio_devices_t device, const char *device_address);
++    bool   isModeInCall();
+     static status_t setPhoneState(int state);
+     static status_t setRingerMode(uint32_t mode, uint32_t mask);
+     static status_t setForceUse(audio_policy_force_use_t usage, audio_policy_forced_cfg_t config);
+diff --git a/include/media/IAudioPolicyService.h b/include/media/IAudioPolicyService.h
+index b8a4621..60f93ed 100644
+--- a/include/media/IAudioPolicyService.h
++++ b/include/media/IAudioPolicyService.h
+@@ -93,6 +93,7 @@ public:
+                                     int session,
+                                     int id) = 0;
+     virtual status_t unregisterEffect(int id) = 0;
++	virtual bool isInCall() = 0;
+     virtual status_t setEffectEnabled(int id, bool enabled) = 0;
+     virtual bool     isStreamActive(int stream, uint32_t inPastMs = 0) const = 0;
+     virtual status_t queryDefaultPreProcessing(int audioSession,
+diff --git a/media/libmedia/AudioSystem.cpp b/media/libmedia/AudioSystem.cpp
+index 8a77d4d..9756877 100644
+--- a/media/libmedia/AudioSystem.cpp
++++ b/media/libmedia/AudioSystem.cpp
+@@ -506,6 +506,15 @@ const sp<IAudioPolicyService>& AudioSystem::get_audio_policy_service()
+     return gAudioPolicyService;
+ }
+ 
++
++bool AudioSystem::isModeInCall()
++{
++    const sp<IAudioPolicyService>& aps = AudioSystem::get_audio_policy_service();
++    if (aps == 0) return PERMISSION_DENIED;
++
++    return aps->isInCall();
++}
++
+ status_t AudioSystem::setDeviceConnectionState(audio_devices_t device,
+                                                audio_policy_dev_state_t state,
+                                                const char *device_address)
+diff --git a/media/libmedia/IAudioPolicyService.cpp b/media/libmedia/IAudioPolicyService.cpp
+index 8aa8771..6e071c2 100644
+--- a/media/libmedia/IAudioPolicyService.cpp
++++ b/media/libmedia/IAudioPolicyService.cpp
+@@ -57,6 +57,7 @@ enum {
+     GET_OUTPUT_FOR_EFFECT,
+     REGISTER_EFFECT,
+     UNREGISTER_EFFECT,
++    IS_IN_CALL,
+     IS_STREAM_ACTIVE,
+     GET_DEVICES_FOR_STREAM,
+     QUERY_DEFAULT_PRE_PROCESSING,
+@@ -84,7 +85,12 @@ public:
+         remote()->transact(SET_DEVICE_CONNECTION_STATE, data, &reply);
+         return static_cast <status_t> (reply.readInt32());
+     }
+-
++virtual bool isInCall()
++    {
++        Parcel data, reply;
++        remote()->transact(IS_IN_CALL, data, &reply);
++        return static_cast <bool> (reply.readInt32());
++    }
+     virtual audio_policy_dev_state_t getDeviceConnectionState(
+                                     audio_devices_t device,
+                                     const char *device_address)
+@@ -420,6 +426,10 @@ status_t BnAudioPolicyService::onTransact(
+     uint32_t code, const Parcel& data, Parcel* reply, uint32_t flags)
+ {
+     switch(code) {
++        case IS_IN_CALL: {
++            CHECK_INTERFACE(IAudioPolicyService, data, reply);
++            reply->writeInt32(static_cast<uint32_t> (isInCall()));
++        }
+         case SET_DEVICE_CONNECTION_STATE: {
+             CHECK_INTERFACE(IAudioPolicyService, data, reply);
+             audio_devices_t device =
+diff --git a/services/audioflinger/AudioPolicyService.cpp b/services/audioflinger/AudioPolicyService.cpp
+index b9a9115..225436b 100644
+--- a/services/audioflinger/AudioPolicyService.cpp
++++ b/services/audioflinger/AudioPolicyService.cpp
+@@ -1110,6 +1110,15 @@ void AudioPolicyService::AudioCommandThread::AudioCommand::dump(char* buffer, si
+             mParam);
+ }
+ 
++bool AudioPolicyService::isInCall()
++{
++    if (mpAudioPolicy == NULL) {
++        return NO_INIT;
++    }
++    Mutex::Autolock _l(mLock);
++    return mpAudioPolicy ->isInCall();
++}
++
+ /******* helpers for the service_ops callbacks defined below *********/
+ void AudioPolicyService::setParameters(audio_io_handle_t ioHandle,
+                                        const char *keyValuePairs,
+diff --git a/services/audioflinger/AudioPolicyService.h b/services/audioflinger/AudioPolicyService.h
+index fe82d6d..1c5bb27 100644
+--- a/services/audioflinger/AudioPolicyService.h
++++ b/services/audioflinger/AudioPolicyService.h
+@@ -107,6 +107,8 @@ public:
+     virtual uint32_t getDevicesForStream(audio_stream_type_t stream);
+ 
+     virtual audio_io_handle_t getOutputForEffect(effect_descriptor_t *desc);
++    // true if device is in a telephony or VoIP call
++    virtual bool isInCall();
+     virtual status_t registerEffect(effect_descriptor_t *desc,
+                                     audio_io_handle_t io,
+                                     uint32_t strategy,

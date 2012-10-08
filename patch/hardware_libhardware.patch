@@ -1,0 +1,12 @@
+diff --git a/include/hardware/audio_policy.h b/include/hardware/audio_policy.h
+index 8f209e3..3726877 100644
+--- a/include/hardware/audio_policy.h
++++ b/include/hardware/audio_policy.h
+@@ -244,6 +244,7 @@ struct audio_policy {
+ 
+     /* dump state */
+     int (*dump)(const struct audio_policy *pol, int fd);
++     bool (*isInCall)();
+ };
+ 
+ struct audio_policy_service_ops {

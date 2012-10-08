@@ -1,0 +1,119 @@
+# Copyright (c) 2010, Code Aurora Forum. All rights reserved.
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#     * Redistributions of source code must retain the above copyright
+#       notice, this list of conditions and the following disclaimer.
+#     * Redistributions in binary form must reproduce the above
+#       copyright notice, this list of conditions and the following
+#       disclaimer in the documentation and/or other materials provided
+#       with the distribution.
+#     * Neither the name of Code Aurora Forum, Inc. nor the names of its
+#       contributors may be used to endorse or promote products derived
+#       from this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED "AS IS" AND ANY EXPRESS OR IMPLIED
+# WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
+# MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NON-INFRINGEMENT
+# ARE DISCLAIMED.  IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS
+# BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+# CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+# SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR
+# BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
+# WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE
+# OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN
+# IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+#
+#
+
+# on emmc mount the partition containing firmware
+on emmc-fs
+    #<-- blocked by dongseok(p11171)
+   #mkdir /tombstones 0771 system system
+   #mount ext4 /dev/block/mmcblk0p16 /tombstones nosuid nodev barrier=1
+   #mkdir /tombstones/modem 0771 system system
+   #mkdir /tombstones/mdm 0771 system system
+   #mkdir /tombstones/lpass 0771 system system
+   #mkdir /firmware 0771 system system
+   #wait /dev/block/mmcblk0p1
+   #mount vfat /dev/block/mmcblk0p1 /firmware ro shortname=lower
+   #exec /system/bin/sh /system/etc/init.qcom.modem_links.sh
+    #-->
+    #<-- added by dongseok(p11171)
+    mkdir /firmware 0771 system system
+    wait /dev/block/mmcblk0p1
+    mount vfat /dev/block/mmcblk0p1 /firmware ro shortname=lower
+    exec /system/bin/sh /system/etc/init.qcom.modem_links.sh
+    # Pantech Patch 140(deleted)
+    # exec /system/bin/sh /system/etc/init.qcom.mdm_links.sh
+    # FEATURE_SKY_FOTA park.byungchul 20110317
+    # I leaved this code here for reference with comment
+    #mkdir /modemtest 0777 system system
+    #mount vfat /dev/block/mmcblk0p1 /modemtest rw shortname=lower
+    #mount vfat /dev/block/mmcblk0p1 /system/etc/firmware/misc rw
+    
+    #-->
+
+    write /sys/devices/i2c-0/0-0024/cyttsp_update_fw 1
+on post-fs
+   mount ext4 /dev/block/mmcblk0p13 /system rw remount barrier=1
+#   mount ext4 /dev/block/mmcblk0p12 /system ro remount barrier=1
+
+
+service kickstart /system/bin/qcks l
+    oneshot
+    disabled
+
+#20120510.WSH, 150 patchEA¢¯¢® qcamsvr_start()¨öCCa ¨úE¥ì¥ì¡¤I  
+#start camera server as daemon
+#service qcamerasvr /system/bin/mm-qcamera-daemon
+#        class late_start
+#        user system
+#        group system camera inet
+
+# Start kickstart if csfb or svlte2a target
+on property:ro.baseband=csfb
+    wait /dev/ttyHSL1
+    mkdir /data/qcks 0770 system system
+    start kickstart
+
+on property:ro.baseband=svlte2a
+    wait /dev/ttyHSL1
+    mkdir /data/qcks 0770 system system
+    start kickstart
+
+
+service dcvsd0 /system/bin/dcvsd -c 0 -f /data/misc/dcvsd/dcvsd0.conf
+    user root
+    disabled
+
+service dcvsd1 /system/bin/dcvsd -c 1 -f /data/misc/dcvsd/dcvsd1.conf
+    user root
+    disabled
+
+service mpdecision /system/bin/mpdecision --no_sleep --avg_comp
+    user root
+    disabled
+
+service thermald /system/bin/thermald
+    class main
+    user root
+    group root
+
+service qseecomd /system/bin/qseecomd
+   class late_start 
+   user system
+   group system
+
+service qrngd /system/bin/qrngd -f
+    user root
+
+on property:ro.baseband=svlte2a
+   setprop ro.config.ehrpd true
+   setprop ro.ril.svlte1x true
+
+on property:sys.radio.shutdown=true
+   exec /system/bin/sh /system/etc/init.qcom.efs.sync.sh
+   user root
+   group root
