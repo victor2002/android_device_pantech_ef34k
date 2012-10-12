@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-PRODUCT_LOCALES := zh_CN zh_TW en_US
-
 ## The gps config appropriate for this device
 PRODUCT_COPY_FILES += device/common/gps/gps.conf_US_SUPL:system/etc/gps.conf
 
@@ -50,11 +48,13 @@ PRODUCT_COPY_FILES += \
 # Ramdisk
 PRODUCT_COPY_FILES += \
     device/pantech/ef34k/ramdisk/init.rc:root/init.rc \
+    device/pantech/ef34k/ramdisk/init:root/init \
     device/pantech/ef34k/ramdisk/init.qcom.rc:root/init.qcom.rc \
     device/pantech/ef34k/ramdisk/init.qcom.sh:root/init.qcom.sh \
     device/pantech/ef34k/ramdisk/init.target.rc:root/init.target.rc \
     device/pantech/ef34k/ramdisk/init.qcom.usb.rc:root/init.qcom.usb.rc \
     device/pantech/ef34k/ramdisk/ueventd.rc:root/ueventd.rc \
+    device/pantech/ef34k/ramdisk/logo2.rle:root/logo2.rle \
     device/pantech/ef34k/ramdisk/initlogo.rle:root/initlogo.rle 
 
 # WIFI

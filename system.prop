@@ -27,10 +27,9 @@ dev.pm.dyn_samplingrate=1
 
 #ro.hdmi.enable=true
 #
-#lpa.decode=true
 #jmlee Qsound EQ --> LPA Dsiable
-lpa.decode=true
-#lpa.use-stagefright=true
+#lpa.decode=true
+lpa.use-stagefright=true
 
 #system props for the MM modules
 media.stagefright.enable-player=true
@@ -86,4 +85,5 @@ ro.vold.switchablepair=/mnt/sdcard,/mnt/emmc
 debug.enabletr=true
 com.qc.hardware=true
 ro.sf.compbypass.enable=1
-com.qc.hdmi_out=true
+#com.qc.hdmi_out=true
+persist.sys.timezone=Asia/Shanghai

@@ -1,7 +1,0 @@
-# pantech usb composition
-on usb-charging-mode
-	write /sys/class/android_usb/android0/enable 0
-	write /sys/class/android_usb/android0/f_diag/clients diag
-	write /sys/class/android_usb/android0/f_serial/transports smd
-	write /sys/class/android_usb/android0/functions serial,diag
-	write /sys/class/android_usb/android0/enable 1

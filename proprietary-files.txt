@@ -1,13 +1,14 @@
 #bins
 bin/battery_charging
 bin/cnd
-bin/cpmgrif
+#bin/cpmgrif
 bin/pam_server
 bin/time_daemon
 #bin/usb_serial_write
 bin/usb_manager
 bin/wiperiface
 bin/thermald
+etc/thermald.conf
 # Add device specific blobs here
 # NFC
 vendor/firmware/libpn544_fw.so
@@ -17,7 +18,10 @@ lib/libloc_eng.so
 #camera
 lib/libOlaEngine.so
 lib/libcamera_client.so
-
+#bulebooth
+#lib/libbluetoothd
+#lib/libbluetoot
+bin/hciattach
 lib/libcpmgrjni.so
 #lib/libcp-proccmd.so
 lib/libdrmfs.so

@@ -24,6 +24,7 @@
 
 #include "hardware_legacy/wifi.h"
 #include "libwpa_client/wpa_ctrl.h"
+//#include "hardware_legacy/wpa_ctrl.h"
 
 #define LOG_TAG "WifiHW"
 #include "cutils/log.h"
@@ -534,7 +535,7 @@ int update_ctrl_interface(const char *config_file) {
     }
 
     if (!strcmp(config_file, SUPP_CONFIG_FILE)) {
-	property_get("wifi.interface", ifc, WIFI_TEST_INTERFACE);
+        property_get("wifi.interface", ifc, WIFI_TEST_INTERFACE);
     } else {
         strcpy(ifc, CONTROL_IFACE_PATH);
     }

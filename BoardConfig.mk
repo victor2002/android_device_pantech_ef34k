@@ -60,6 +60,7 @@ BOARD_USES_QCOM_LIBS := true
 BOARD_USE_SKIA_LCDTEXT := true
 BOARD_HAVE_BLUETOOTH := true
 BOARD_HAVE_BLUETOOTH_BCM := true
+BOARD_HAVE_BLUETOOTH_CUSTOM_HCIATTACH :=true
 # Workaround for glitches while cropping bypass layers
 #TARGET_NO_BYPASS_CROPPING := true
 
@@ -81,17 +82,20 @@ WIFI_DRIVER_FW_PATH_PARAM        := "/sys/module/wlan/parameters/firmware_path"
 WIFI_DRIVER_MODULE_PATH          := "/system/lib/modules/wlan.ko"
 WIFI_DRIVER_FW_PATH_STA          := "/system/etc/wl/bcm43291.bin"
 WIFI_DRIVER_FW_PATH_AP           := "/system/etc/wl/bcm43291_apsta.bin"
-WIFI_DRIVER_MODULE_NAME          := "bcm4329"
+WIFI_DRIVER_MODULE_NAME          := "wlan"
 WIFI_DRIVER_MODULE_ARG           := "firmware_path=/system/etc/wl/bcm43291.bin nvram_path=/system/etc/wl/nvram.txt"
 BOARD_WLAN_DEVICE_REV            := bcm4329
 WIFI_BAND                        := 802_11_ABG
 TARGET_CUSTOM_WIFI := ../../device/pantech/ef34k/wifi/wifi.c
 
+#vibrator
+BOARD_HAS_VIBRATOR_IMPLEMENTATION :== ../../device/pantech/ef34k/patch/vibrator.c
+
 # Vold
 BOARD_VOLD_EMMC_SHARES_DEV_MAJOR := true
 BOARD_VOLD_MAX_PARTITIONS := 19
-BOARD_USE_USB_MASS_STORAGE_SWITCH := true
-TARGET_USE_CUSTOM_SECOND_LUN_NUM := 1
+#BOARD_USE_USB_MASS_STORAGE_SWITCH := true
+TARGET_USE_CUSTOM_LUN_FILE_PATH := /sys/devices/platform/msm_hsusb/gadget/lun%d/file
 
 # recovery
 #BOARD_TOUCH_RECOVERY	:= true
@@ -99,4 +103,15 @@ BOARD_HAS_NO_SELECT_BUTTON     := true
 #BOARD_HAS_NO_MISC_PARTITION    := true
 BOARD_USES_MMCUTILS            := true
 BOARD_HAS_LARGE_FILESYSTEM     := true
-BOARD_USE_CUSTOM_RECOVERY_FONT := \"roboto_15x24.h\"
+#BOARD_USE_CUSTOM_RECOVERY_FONT := \"font_7x16.h\"
+DEVICE_RESOLUTION := 480x800
+#BOARD_HAS_NO_REAL_SDCARD := true
+TW_INTERNAL_STORAGE_PATH := "/emmc"
+TW_INTERNAL_STORAGE_MOUNT_POINT := "emmc"
+TW_EXTERNAL_STORAGE_PATH := "/sdcard"
+TW_EXTERNAL_STORAGE_MOUNT_POINT := "sdcard"
+#RECOVERY_TOUCHSCREEN_SWAP_XY := true
+#RECOVERY_TOUCHSCREEN_FLIP_Y := true
+#RECOVERY_TOUCHSCREEN_FLIP_X := true
+#TW_ALWAYS_RMRF := true
+#TW_DEFAULT_EXTERNAL_STORAGE := true

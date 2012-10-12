@@ -23,9 +23,9 @@ loglevel 3
     export ANDROID_ASSETS /system/app
     export ANDROID_DATA /data
     #modified env variable by dongseok(p11171)
-    export EXTERNAL_STORAGE /mnt/external_sd
-    export INTERNAL_STORAGE /mnt/sdcard
-    export EXTERNAL_STORAGE /mnt/emmc
+#    export EXTERNAL_STORAGE /mnt/external_sd
+    export INTERNAL_STORAGE /mnt/emmc
+    export EXTERNAL_STORAGE /mnt/sdcard
     export ASEC_MOUNTPOINT /mnt/asec
     export LOOP_MOUNTPOINT /mnt/obb
 #+US1-CF1 SUPPORT_FRAMEWORK2
@@ -46,7 +46,7 @@ loglevel 3
 
 # create mountpoints
     mkdir /mnt 0775 root system
-    mkdir /mnt/sdcard 0000 system system
+    mkdir /mnt/sdcard 0777 system system
 
 # added by donseok(p11171)
     mkdir /mnt/emmc 0777 system system
@@ -62,6 +62,7 @@ loglevel 3
 
 # Backwards Compat - XXX: Going away in G*
     symlink /mnt/sdcard /sdcard
+    symlink /mnt/emmc /emmc
 
     mkdir /system
     mkdir /data 0771 system system
@@ -291,7 +292,8 @@ on post-fs-data
     mkdir /data/misc/wifi 0775 system system
     mkdir /data/misc/wifi/sockets 0775 system system
     mkdir /data/system 0775 system system
-# goole cts fail    mkdir /data/system/wpa_supplicant 0777 wifi wifi
+# goole cts fail    
+    mkdir /data/system/wpa_supplicant 0777 wifi wifi
 # Broadcom wlan ---
 # BSH --
 
@@ -787,7 +789,7 @@ service btld /system/bin/logwrapper /system/bin/btld -pf /system/bin/BCM43291A0_
     disabled
     oneshot
     
-service dhcpcd /system/bin/dhcpcd -B
+service dhcpcd /system/bin/dhcpcd -B wlan0
            group dhcp wifi system bluetooth
            disabled
            oneshot
@@ -825,12 +827,13 @@ service bluetoothd /system/bin/bluetoothd -n
 
 #+++ BRCM[Excelt], BTL-A
 #+++ BRCM[Excelt], BlueZ
-#service hciattach /system/bin/hciattach -s 115200 -n /dev/ttyHS0 bcm4325 4000000 flow &
-#    class late_start
-#    user bluetooth
-#    group qcom_oncrpc bluetooth net_bt_admin
-#    disabled
-#    oneshot
+#service hciattach /system/bin/brcm_patchram_plus -d --patchram /system/bin/#BCM43291A0_003.001.013.0141.0000_Pantech_EF33S_EF34K_extLNA_TestOnly.hcd /dev/ttyHS0 &
+service hciattach /system/bin/hciattach -s115200 /dev/ttyHS0 any
+    class late_start
+    user bluetooth
+    group qcom_oncrpc bluetooth net_bt_admin
+    disabled
+    oneshot
 #--- BRCM[Excelt], BlueZ
 
 #service hfag /system/bin/sdptool add --channel=10 HFAG
@@ -882,9 +885,6 @@ service bluetoothd /system/bin/bluetoothd -n
 # --> FEATURE_SKY_DS_WIFI_DIRECT
 # block original
 #service dhcpcd /system/bin/dhcpcd -B wlan0
-service dhcpcd /system/bin/dhcpcd
-    disabled
-    oneshot
 # --> FEATURE_SKY_DS_WIFI_DIRECT
 
 service racoon /system/bin/racoon
